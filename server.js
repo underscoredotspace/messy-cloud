@@ -9,20 +9,21 @@ var db = require('./mongodb');
 var app = require('express')();
 
 // Authentication with passport and passportSocketIo
-var connectMongo = require('connect-mongo');
+// Session support for auth
 var session = require('express-session');
-var MongoStore = connectMongo(session);
+var MongoStore = require('connect-mongo')(session);
 var sessionStore = new MongoStore({url: config.mongo.address})
 var cookieParser = require('cookie-parser');
+// Passport auth
 var passport = require('passport');
 var passportSocketIo = require("passport.socketio");
-var socketio = require('socket.io');
-var http = require("http");
-var server = http.createServer(app);
-var io = socketio.listen(server);
-var Strategy = require('passport-twitter').Strategy;
+var TwitterStrategy = require('passport-twitter').Strategy;
+// Link socket.io and Express
+var server = require("http").createServer(app);
+var io = require('socket.io').listen(server);
 
-passport.use(new Strategy({
+// Set up Passport Twitter auth process
+passport.use(new TwitterStrategy({
     consumerKey: config.twitter.consumer_key,
     consumerSecret: config.twitter.consumer_secret,
     callbackURL: config.twitter.callbackURL
@@ -50,6 +51,7 @@ passport.deserializeUser(function(obj, cb) {
   cb(null, obj);
 });
 
+// Passport-socket.io setup
 io.use(passportSocketIo.authorize({
   cookieParser: cookieParser,
   key:          config.passport.key,
@@ -67,6 +69,7 @@ function onAuthorizeFail(data, message, error, accept){
   accept(new Error(message));
 }
 
+// Set up session cookie for Express
 app.use(session({
   key: config.passport.key, 
   secret: config.passport.secret, 
@@ -79,16 +82,19 @@ app.use(cookieParser());
 app.use(passport.initialize());
 app.use(passport.session());
 
+// We return here from Twitter after auth request
 app.use('/login/twitter/callback',  
   passport.authenticate('twitter', {failureRedirect: '/login'}), 
   function (req, res) {
     res.redirect('/');
   });
 
+// Send auth request to Twitter
 app.use('/login/twitter',  
   passport.authenticate('twitter')
 );
 
+// All other routes
 app.use('/', require('./routes'));
 
 // CONNECT TO MONGO
@@ -111,10 +117,10 @@ db.connect(config.mongo.address, function(err) {
         }); 
 
         socket.on('test', function(message) {
-          console.log('test message: ' + message);
+          console.log('test message recieved: ' + message);
         })
 
-        // BIN UNREGISTERED USERS
+        // DISCONNECT UNREGISTERED USERS
         if (socket.request.user.registered==true) {
           console.log(Date() + ': registered user connected to socket.io');
         } else {
