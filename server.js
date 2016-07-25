@@ -3,7 +3,6 @@ var _ = require("underscore");
 
 // Start up mongodb connection
 var mongodb = require('mongodb').MongoClient;
-var mongodb_url = 'mongodb://127.0.0.1:27017/underscoredotpsaceproto';
 var db = require('./mongodb');
 
 // Set up Express requirements
@@ -13,7 +12,7 @@ var app = require('express')();
 var connectMongo = require('connect-mongo');
 var session = require('express-session');
 var MongoStore = connectMongo(session);
-var sessionStore = new MongoStore({url: mongodb_url})
+var sessionStore = new MongoStore({url: config.mongo.address})
 var cookieParser = require('cookie-parser');
 var passport = require('passport');
 var passportSocketIo = require("passport.socketio");
@@ -93,7 +92,7 @@ app.use('/login/twitter',
 app.use('/', require('./routes'));
 
 // CONNECT TO MONGO
-db.connect(mongodb_url, function(err) {
+db.connect(config.mongo.address, function(err) {
   if (err) {
     console.log(Date() + ': ' + 'Unable to connect to Mongo.')
     process.exit(1)
