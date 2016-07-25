@@ -8,8 +8,12 @@ routes.use(function(req, res, next) {
   }
 });
 
-routes.get('*', function (req, res) {
-  res.sendStatus(404);
+routes.get('/test', function(req, res) {
+    res.status(200).json({test: 'admin'});
 });
+
+routes.use('*', function(req, res) {
+  res.sendStatus(404);
+})
 
 module.exports = routes;

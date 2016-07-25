@@ -1,7 +1,13 @@
 const routes = require('express').Router();
 
 // Routes that can be accessed while logged in but still not registered
+routes.get('/aboutme/:element', function(req, res) {
+  // send one part of user record
+  res.status(200).json(req.user[req.params.element]);
+});
+
 routes.get('/aboutme', function(req, res) {
+  // send whole of user record
   res.status(200).json(req.user);
 });
 
@@ -14,11 +20,13 @@ routes.use(function (req, res, next) {
   }
 });
 
-// Routes that can only be accessed by logged in admin users
-routes.use('/admin', require('./admin.js'))
+routes.use('/fs', require('./filesystem.js'));
 
-routes.use('/test', function (req, res) {
-  res.status(200).json({ method: req.method, message: req.query });
+// Routes that can only be accessed by logged in admin users
+routes.use('/admin', require('./admin.js'));
+
+routes.get('/test', function(req, res) {
+    res.status(200).json({test: 'api'});
 });
 
 routes.use('*', function(req, res) {

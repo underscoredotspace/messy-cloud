@@ -7,6 +7,7 @@ var db = require('./mongodb');
 
 // Set up Express requirements
 var app = require('express')();
+var bodyParser = require('body-parser');
 
 // Authentication with passport and passportSocketIo
 // Session support for auth
@@ -81,6 +82,10 @@ app.use(session({
 app.use(cookieParser());
 app.use(passport.initialize());
 app.use(passport.session());
+
+// Setup for dealing with POST data
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // We return here from Twitter after auth request
 app.use('/login/twitter/callback',  
