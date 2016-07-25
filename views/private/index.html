@@ -1,0 +1,19 @@
+<html>
+<head><title>Teal Hawk</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+    var socket = io.connect();
+        socket.on('connect', function() {
+            console.log('you have been connected');
+        });
+        socket.on('connect_error', function() {
+            console.log('you have been disconnected');
+        });
+        socket.emit('test', 'did it work?');
+    </script>
+</head>
+    <body>
+        <p>This is Teal Hawk. You are both logged in and authorised.</p>
+         <a href="/logout">Log out</a>
+    </body>
+</html>
