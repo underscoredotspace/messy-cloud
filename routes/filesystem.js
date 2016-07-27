@@ -1,65 +1,46 @@
 const routes = require('express').Router();
-const fs = require('fs');
-const fsRoot = './uploads';
+const messy = require('../util/messy');
+const fsRoot = './uploads'; //** to be validated somewhere on startup
 var _ = require("underscore");
 
 routes.get('/test', function(req, res) {
     res.status(200).json({test: 'fs'});
 });
 
-routes.post('/ls/*', function(req, res) {
-    messyfs.ls('/' + req.body.dir, function(err, files, folders) {
-        if(!err) {
-            res.status(200).json({dir: req.body.dir, folders: folders, files: files});
+routes.route('/folder')
+  .get(function(req, res) {
+      if(req.headers.hasOwnProperty('path')) {
+        res.status(200).json({action: 'list', path: req.headers.path, dir: 'dir listing'});
+      } else {
+        res.status(400).json({err: 'path required'});
+      }
+  })
+  .post(function(req, res) {
+    // Request to create a new folder
+    if(req.headers.hasOwnProperty('location') && req.headers.hasOwnProperty('name')) {
+      messy.fs.mkdir(fsRoot + '/' + req.headers.location + '/' + req.headers.name, function(err, success) {
+        if (!err) {
+          console.log(success);
+          res.status(200).json(success);
         } else {
-            res.status(500).json({err: err});
+          res.status(400).json({action: 'mkdir', err: err});
         }
-    });
-})
-
-routes.get('/ls/:dir', function(req, res) {
-    messyfs.ls('/' + req.params.dir, function(err, files, folders) {
-        if(!err) {
-            res.status(200).json({dir: '/' + req.params.dir, folders: folders, files: files});
-        } else {
-            res.status(500).json({err: err});
-        }
-    });
-});
-
-routes.get('/ls', function(req, res) {
-    messyfs.ls('/', function(err, files, folders) {
-        if(!err) {
-            res.status(200).json({dir: '/', folders: folders, files: files});
-        } else {
-            res.status(500).json({err: err});
-        }
-    });
-});
+      })
+    } else { 
+        res.status(400).json({err: 'location and name required'});
+    }
+  })
+  .put(function(req, res) {
+    // Request to rename existing folder 
+    res.status(200).json({action: 'rename', dir: 'dir listing'});
+  })
+  .delete(function(req, res) {
+    // Request to delete folder
+    res.status(200).json({action: 'delete', dir: 'dir listing'});
+  });
 
 routes.use('*', function(req, res) {
   res.sendStatus(404);
 });
-
-messyfs = {
-    ls: function(path, callback) {
-        var folders = [];
-        var files = [];
-        fs.readdir(fsRoot + path, function(err, filelist) {
-            if (!err) {
-                _.each(filelist, function(item) {
-                    if (fs.statSync(fsRoot + path + '/' + item).isDirectory()) {
-                        folders.push(item + '/');
-                    } else {
-                        files.push(item);
-                    }
-                });
-                callback(err, files, folders);
-            } else {
-                callback(err, null, null);
-            }
-        });
-    }
-}
 
 module.exports = routes;

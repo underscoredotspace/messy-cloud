@@ -1,5 +1,5 @@
 const routes = require('express').Router();
-var db = require('../mongodb');
+var db = require('../util/mongodb');
 
 // ## TODO ## - only use if not production
 routes.use(function(req, res, next) {

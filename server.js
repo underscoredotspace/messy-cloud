@@ -1,9 +1,9 @@
 var config = require('./config.js');
-var _ = require("underscore");
+var _ = require('underscore');
 
 // Start up mongodb connection
 var mongodb = require('mongodb').MongoClient;
-var db = require('./mongodb');
+var db = require('./util/mongodb');
 
 // Set up Express requirements
 var app = require('express')();
@@ -17,10 +17,10 @@ var sessionStore = new MongoStore({url: config.mongo.address})
 var cookieParser = require('cookie-parser');
 // Passport auth
 var passport = require('passport');
-var passportSocketIo = require("passport.socketio");
+var passportSocketIo = require('passport.socketio');
 var TwitterStrategy = require('passport-twitter').Strategy;
 // Link socket.io and Express
-var server = require("http").createServer(app);
+var server = require('http').createServer(app);
 var io = require('socket.io').listen(server);
 
 // Set up Passport Twitter auth process
