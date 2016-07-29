@@ -36,7 +36,19 @@ routes.route('/folder')
   })
   .delete(function(req, res) {
     // Request to delete folder
-    res.status(200).json({action: 'delete', dir: 'dir listing'});
+    if(req.headers.hasOwnProperty('name')) {
+      messy.fs.rmdir(fsRoot + '/' + req.headers.name, function(err, result) {
+        if (!err) {
+          console.log({success: result});
+          res.status(200).json({success: result});
+        } else {
+          res.status(500).json({action: 'rmdir', err: err});
+        }
+      })
+    } else { 
+        res.status(400).json({err: 'name required'});
+    }
+
   });
 
 routes.use('*', function(req, res) {
