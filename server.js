@@ -30,6 +30,7 @@ passport.use(new TwitterStrategy({
     callbackURL: config.twitter.callbackURL
   },
   function(token, tokenSecret, profile, cb) {
+    console.log(Date() + ': Twitter user ' + profile._json.screen_name + ' logged in');
     var users = db.get().collection('users');
     users.find({id: profile._json.id}).limit(1).toArray(function(err, user){
       if (user.length>0) {
@@ -39,6 +40,7 @@ passport.use(new TwitterStrategy({
         returnUser = _.extend(profile._json, {registered: false, admin: false});
         users.insert(returnUser);
       }
+      console.log(Date() + ': Twitter user ' + profile._json.screen_name + ' registered==' + returnUser.registered);
       return cb(null, returnUser);
     })
   }

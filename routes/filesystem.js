@@ -18,12 +18,12 @@ routes.route('/folder')
   .post(function(req, res) {
     // Request to create a new folder
     if(req.headers.hasOwnProperty('location') && req.headers.hasOwnProperty('name')) {
-      messy.fs.mkdir(fsRoot + '/' + req.headers.location + '/' + req.headers.name, function(err, success) {
+      messy.fs.mkdir(fsRoot + '/' + req.headers.location + '/' + req.headers.name, function(err, result) {
         if (!err) {
-          console.log(success);
-          res.status(200).json(success);
+          res.status(200).json({success: result});
+          //** add folder(s) to db
         } else {
-          res.status(400).json({action: 'mkdir', err: err});
+          res.status(500).json({action: 'mkdir', err: err, result: result});
         }
       })
     } else { 
@@ -39,10 +39,11 @@ routes.route('/folder')
     if(req.headers.hasOwnProperty('name')) {
       messy.fs.rmdir(fsRoot + '/' + req.headers.name, function(err, result) {
         if (!err) {
-          console.log({success: result});
           res.status(200).json({success: result});
+          //** delete folder (and contents) from db
         } else {
-          res.status(500).json({action: 'rmdir', err: err});
+          res.status(500).json({action: 'rmdir', err: err, result: result});
+          //** as potential for partial delete, do reindex of folder
         }
       })
     } else { 

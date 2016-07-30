@@ -6,12 +6,11 @@ async = require('async')
 messy = {
   fs: {
       mkdir: function (folderName, callback)  {
-          folderName = messy.removeDupeSlash(folderName);
+          folderName = messy.cleanFolder(folderName);
           nodefs.mkdir(folderName, function(err) {
               if (!err) {
                   // folder (and potentially parent(s)) created successfully
                   callback(err, {mkdir: folderName});
-                  //** create link in database
               } else {
                   // if parent folder doesn't exist
                   if (err.errno==-2) {
@@ -34,6 +33,7 @@ messy = {
           });
       },
       rmdir: function(folderName, callback) {
+        folderName = messy.cleanFolder(folderName);
         // Try to delete folder
         nodefs.rmdir(folderName, function (err) {
           if (!err) {
@@ -44,6 +44,7 @@ messy = {
               nodefs.readdir(folderName, function (err, items) {
                 calls = [];
                 items.forEach(function (item) {
+                  // cb is callabck for async.parallel function below
                   calls.push(function(cb) {
                     itemFull = messy.removeDupeSlash(folderName + '/' + item);
                     nodefs.stat(itemFull, function(err, itemstat) {
@@ -58,16 +59,18 @@ messy = {
                           return cb(err, {unlink: itemFull});
                         })
                       }
-                    }) // end it nodefs.stat
+                    }) // end of nodefs.stat
                   })
                 }) // end of forEach
-              // Try delete folder again
               async.parallel(calls, function(err, result) {
                 if (err) {
                   console.log(err);
+                  // If any of our cb results above were errors return that fail
                   return callback(err, null);
                 } else {
+                // Try delete folder again  
                   nodefs.rmdir(folderName, function(err) {
+                    // End of the function, passes of fails at this point and as such
                     callback(err, {rmdir2: folderName}); 
                   })
                 }
@@ -81,51 +84,11 @@ messy = {
         })
       }
   },
-  removeDupeSlash: function (withSlashes) {
+  cleanFolder: function (dirtyFolder) {
     // Remove duplicate slashes in file path, so if passed '///upload//path/' will return '/upload/path/'
-    return withSlashes.replace(/\/{2,}/g, '/');
+    // Remove any '..' so we can't do anything outside of fsRoot
+    return dirtyFolder.replace('..', '').replace(/\/{2,}/g, '/');
   }
 }
 
 module.exports = messy;
-
-/*
-        nodefs.rmdir(folderName, function(err) {
-          if (!err) {
-            // No error on this cycle, pass niceness back to callback
-            callback(err, {rmdir: folderName});
-          } else {
-            // if folder isn't empty
-            if (err.errno==-66) {
-              // ls our folder
-              nodefs.readdir(folderName, function(err, files) {
-                if (!err) {
-                  files.forEach(function (file, index) {
-                    var curPath = folderName + "/" + file;
-                    nodefs.stat(curPath, function(err, stat) {
-                      if (stat.isDirectory()) {
-                        // it's a directory - recurse
-                        console.log(folderName + ", " + curPath);
-                        messy.fs.rmdir(curPath);
-                      } else { 
-                        // it's a file - delete it
-                        nodefs.unlink(curPath);
-                      }
-                    })
-                  });
-                  nodefs.rmdir(folderName, function() {
-                    callback(err, {rmdir: folderName})
-                  });
-                } else {
-                  // something really bad happened doing readdir, so let's fail out
-                  console.log('something bad happened doing readdir in messy.fs.rmdir');
-                  callback(err, null);
-                }
-              })
-            } else {
-              console.log('some other error happened, let the callback function handle it');
-              callback(err, null);
-            }
-          }
-        })
-*/
