@@ -17,11 +17,11 @@ var sessionStore = new MongoStore({url: config.mongo.address})
 var cookieParser = require('cookie-parser');
 // Passport auth
 var passport = require('passport');
-var passportSocketIo = require('passport.socketio');
+//var passportSocketIo = require('passport.socketio');
 var TwitterStrategy = require('passport-twitter').Strategy;
 // Link socket.io and Express
 var server = require('http').createServer(app);
-var io = require('socket.io').listen(server);
+//var io = require('socket.io').listen(server);
 
 // Set up Passport Twitter auth process
 passport.use(new TwitterStrategy({
@@ -55,22 +55,22 @@ passport.deserializeUser(function(obj, cb) {
 });
 
 // Passport-socket.io setup
-io.use(passportSocketIo.authorize({
-  cookieParser: cookieParser,
-  key:          config.passport.key,
-  secret:       config.passport.secret,
-  store:        sessionStore,
-  success:      onAuthorizeSuccess,
-  fail:         onAuthorizeFail
-}));
+// io.use(passportSocketIo.authorize({
+//   cookieParser: cookieParser,
+//   key:          config.passport.key,
+//   secret:       config.passport.secret,
+//   store:        sessionStore,
+//   success:      onAuthorizeSuccess,
+//   fail:         onAuthorizeFail
+// }));
 
-function onAuthorizeSuccess(data, accept){
-  accept();
-}
+// function onAuthorizeSuccess(data, accept){
+//   accept();
+// }
 
-function onAuthorizeFail(data, message, error, accept){
-  accept(new Error(message));
-}
+// function onAuthorizeFail(data, message, error, accept){
+//   accept(new Error(message));
+// }
 
 // Set up session cookie for Express
 app.use(session({
@@ -116,25 +116,25 @@ db.connect(config.mongo.address, function(err) {
       console.log(Date() + ': Express listening on port 3000')
 
       // LISTEN TO SOCKETS
-      io.sockets.on('connection', function (socket) {
-        console.log(Date() + ': ' + socket.request.user.screen_name + '@' + socket.id + ' connected');
+      // io.sockets.on('connection', function (socket) {
+      //   console.log(Date() + ': ' + socket.request.user.screen_name + '@' + socket.id + ' connected');
 
-        socket.on('disconnect', function() {
-          console.log(Date() + ': ' + socket.request.user.screen_name + '@' + socket.id + ' disconnected');
-        }); 
+      //   socket.on('disconnect', function() {
+      //     console.log(Date() + ': ' + socket.request.user.screen_name + '@' + socket.id + ' disconnected');
+      //   }); 
 
-        socket.on('test', function(message) {
-          console.log('test message recieved: ' + message);
-        })
+      //   socket.on('test', function(message) {
+      //     console.log('test message recieved: ' + message);
+      //   })
 
-        // DISCONNECT UNREGISTERED USERS
-        if (socket.request.user.registered==true) {
-          console.log(Date() + ': registered user connected to socket.io');
-        } else {
-          socket.disconnect();
-          console.log(Date() + ': unregistered user attempted to connect to socket.io');
-        }
-      });
+      //   // DISCONNECT UNREGISTERED USERS
+      //   if (socket.request.user.registered==true) {
+      //     console.log(Date() + ': registered user connected to socket.io');
+      //   } else {
+      //     socket.disconnect();
+      //     console.log(Date() + ': unregistered user attempted to connect to socket.io');
+      //   }
+      // });
     }).on('error', console.log);
   }
 })

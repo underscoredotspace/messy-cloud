@@ -12,15 +12,6 @@ routes.use(ensureLoggedIn('/api/403'), function(req, res, next) {
   next();
 });
 
-// Routes that can only be accessed while logged in and registered
-routes.use(function (req, res, next) {
-    if (req.user.registered) {
-      next()
-    } else {
-      res.status(401);
-    }
-});
-
 // send one part of user record
 routes.get('/aboutme/:element', function(req, res) {
   res.status(200).json(req.user[req.params.element]);
@@ -31,13 +22,23 @@ routes.get('/aboutme', function(req, res) {
   res.status(200).json(req.user);
 });
 
-// Filesystem requests
-routes.use('/fs', require('./filesystem.js'));
+routes.use(function(req, res) { 
+  res.sendStatus(418);
+})
+
+// Routes that can only be accessed while logged in and registered
+routes.use(function (req, res, next) {
+    if (req.user.registered) {
+      next()
+    } else {
+      res.status(401);
+    }
+});
 
 // Routes that can only be accessed by logged in admin users
 routes.use('/admin', require('./admin.js'));
 
-routes.use('*', function(req, res) {
+routes.use(function(req, res) {
   res.sendStatus(404);
 })
 
