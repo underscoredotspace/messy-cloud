@@ -12,7 +12,7 @@ routes.get('/test', function(req, res) {
     res.status(200).json({test: 'admin'});
 });
 
-routes.use('*', function(req, res) {
+routes.use(function(req, res) {
   res.sendStatus(404);
 })
 

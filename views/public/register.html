@@ -1,16 +1,5 @@
 <html>
 <head><title>Teal Hawk</title>
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
-        var socket = io.connect();
-        socket.on('connect', function() {
-            console.log('you have been connected');
-        });
-        socket.on('connect_error', function() {
-            console.log('socket error: ');
-        });
-        socket.emit('test', 'did it work?');
-    </script>
 </head>
     <body>
         This is your registraiton holding page. You are logged in now, but not yet authorised. 

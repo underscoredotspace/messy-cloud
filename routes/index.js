@@ -42,7 +42,7 @@ routes.get('/logout', function(req, res) {
   res.redirect('/');
 });
 
-routes.use('/api', require('./api.js'))
+routes.use('/api', require('./api'))
 
 routes.use(ensureLoggedIn('/login'), function(req, res, next) {
     // Check for registered

@@ -1,15 +1,17 @@
-const routes = require('express').Router();
+var routes = require('express').Router();
 var ensureLoggedIn = require('connect-ensure-login').ensureLoggedIn;
 
-// Don't like this, but we end up here if API req from client not logged in
-//** Look at API tokens to replace this
-routes.use('/403', function(req, res) {
-  res.sendStatus(403);
-})
-
 // Routes that can be accessed while logged in but still not registered
-routes.use(ensureLoggedIn('/api/403'), function(req, res, next) {
-  next();
+routes.use(function(req, res, next) {
+  if (req.user) {
+    next();
+  } else {
+    res.sendStatus(403);
+  }
+});
+
+routes.get('/', function(req, res) {
+  res.status(400).json({error: 'missing option'});
 });
 
 // send one part of user record
@@ -22,16 +24,12 @@ routes.get('/aboutme', function(req, res) {
   res.status(200).json(req.user);
 });
 
-routes.use(function(req, res) { 
-  res.sendStatus(418);
-})
-
 // Routes that can only be accessed while logged in and registered
 routes.use(function (req, res, next) {
     if (req.user.registered) {
       next()
     } else {
-      res.status(401);
+      res.sendStatus(401);
     }
 });
 
